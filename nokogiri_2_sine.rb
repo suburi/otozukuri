@@ -1,6 +1,8 @@
 require 'coreaudio'
 require 'byebug'
+require_relative './filter'
 
+include Filter
 dev = CoreAudio.default_output_device
 buf = dev.output_buffer(1024)
 PLAY_TIME = 2
@@ -62,7 +64,7 @@ th = Thread.start do
   end
 
   if ARGV[0] == 'single'
-    buf << build_wave(ARGV[1])
+    buf << self.distortion(build_wave(ARGV[1]), 300, 2)
   else
     buf << build_synthesis_wave
   end

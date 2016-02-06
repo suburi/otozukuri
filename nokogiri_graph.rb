@@ -2,7 +2,9 @@ require 'coreaudio'
 require 'byebug'
 require 'matrix'
 require 'tkextlib/tcllib/plotchart'
+require_relative './filter'
 include Tk::Tcllib::Plotchart
+include Filter
 
 # (1..50).each do |i|
 #   phase = STANDARD_PITCH * 2 * Math::PI / CoreAudio.default_output_device.nominal_rate
@@ -21,18 +23,19 @@ waves = []
 phase = STANDARD_PITCH * 2 ** (tone/12.0) / CoreAudio.default_output_device.nominal_rate
 (0...PLAY_TIME * CoreAudio.default_output_device.nominal_rate).inject(0.0) do |position, i|
   # sine wave
-  # waves << Math.sin(position * 2 * Math::PI) * BIT_DEPTH
+  waves << Math.sin(position * 2 * Math::PI) * BIT_DEPTH
   # sawtooth
   # waves << ((position * 2.0) - 1.0) * BIT_DEPTH
   # squre
   # waves << ((position >= 0.5) ? BIT_DEPTH : -BIT_DEPTH)
   # triangle
-  waves << BIT_DEPTH - (((position * 2.0) - 1.0) * BIT_DEPTH * 2.0).abs
+  # waves << BIT_DEPTH - (((position * 2.0) - 1.0) * BIT_DEPTH * 2.0).abs
   # white noise
   # waves << rand(-BIT_DEPTH..BIT_DEPTH)
   phase * i - (phase * i).floor
 end
 
+waves = self.distortion(waves, 300, 5)
 LEN = 250
 # m = Matrix[*data_3]
 column_zero = (0..LEN).to_a
